@@ -3,12 +3,246 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
   <title>Evidian IAM Quiz App</title>
-  <link rel="stylesheet" href="./assets/index-CaC7M5vW.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f3f4f6;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 48rem;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+    h1 {
+      font-size: 1.875rem;
+      font-weight: bold;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    .question {
+      background-color: white;
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-bottom: 1.5rem;
+    }
+    .question h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    .options {
+      margin-bottom: 0.5rem;
+    }
+    .options label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .options input {
+      margin-right: 0.5rem;
+    }
+    textarea {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+      resize: vertical;
+      min-height: 8rem;
+    }
+    button {
+      width: 100%;
+      background-color: #3b82f6;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2563eb;
+    }
+    .results {
+      background-color: white;
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .results h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    .results p {
+      margin-bottom: 1rem;
+    }
+  </style>
 </head>
 <body>
-  <div id="root"></div>
-  <script type="module" src="./assets/index-Da8oT8fC.js"></script>
+  <div class="container" id="quiz-container"></div>
+  <script>
+    const questions = [
+      {
+        id: 1,
+        type: "multiple",
+        text: "What is a key feature of Evidian's Web Access Manager?",
+        options: [
+          "Clientless Single Sign-On for web applications",
+          "Physical access control for factories",
+          "Backup and replication services",
+          "Intrusive application modification",
+        ],
+        correctAnswer: "Clientless Single Sign-On for web applications",
+      },
+      {
+        id: 2,
+        type: "long",
+        text: "Explain how Evidian's Identity Governance and Administration (IGA) helps organizations manage user access and ensure compliance.",
+        keywords: ["access requests", "compliance", "roles", "audit", "self-service"],
+        maxScore: 10,
+      },
+      {
+        id: 3,
+        type: "multiple",
+        text: "Which authentication method does Evidian Orbion support to enhance security?",
+        options: [
+          "Password-only authentication",
+          "Multi-Factor Authentication (MFA) with FIDO2",
+          "OpenID Connect exclusively",
+          "Single password for all applications",
+        ],
+        correctAnswer: "Multi-Factor Authentication (MFA) with FIDO2",
+      },
+      {
+        id: 4,
+        type: "long",
+        text: "Describe the benefits of Evidian's Single Sign-On (SSO) for enterprise users and IT departments.",
+        keywords: ["one-click access", "security", "helpdesk", "productivity", "authentication"],
+        maxScore: 10,
+      },
+    ];
+
+    let answers = {};
+    let scores = null;
+
+    function gradeLongAnswer(answer, keywords, maxScore) {
+      if (!answer) return 0;
+      const wordCount = answer.split(/\s+/).length;
+      const matchedKeywords = keywords.filter(keyword =>
+        answer.toLowerCase().includes(keyword.toLowerCase())
+      ).length;
+      const keywordScore = (matchedKeywords / keywords.length) * maxScore * 0.7;
+      const lengthScore = Math.min(wordCount / 50, 1) * maxScore * 0.3;
+      return Math.round(keywordScore + lengthScore);
+    }
+
+    function renderQuiz() {
+      const container = document.getElementById("quiz-container");
+      container.innerHTML = "";
+
+      if (scores) {
+        const resultsDiv = document.createElement("div");
+        resultsDiv.className = "results";
+        resultsDiv.innerHTML = `
+          <h2>Results</h2>
+          <p>Total Score: ${scores.total} / ${scores.maxTotal}</p>
+        `;
+        questions.forEach(q => {
+          const questionResult = document.createElement("div");
+          questionResult.className = "mb-4";
+          questionResult.innerHTML = `
+            <p class="font-medium">${q.text}</p>
+            <p>Score: ${scores.questionScores[q.id]}${q.type === "long" ? ` / ${q.maxScore}` : ""}</p>
+            ${q.type === "multiple" ? `<p>Correct Answer: ${q.correctAnswer}</p>` : ""}
+            <p>Your Answer: ${answers[q.id] || "Not answered"}</p>
+          `;
+          resultsDiv.appendChild(questionResult);
+        });
+        const retakeButton = document.createElement("button");
+        retakeButton.textContent = "Retake Quiz";
+        retakeButton.onclick = resetQuiz;
+        resultsDiv.appendChild(retakeButton);
+        container.appendChild(resultsDiv);
+      } else {
+        const title = document.createElement("h1");
+        title.textContent = "Evidian IAM Quiz App";
+        container.appendChild(title);
+
+        questions.forEach(question => {
+          const questionDiv = document.createElement("div");
+          questionDiv.className = "question";
+          const questionTitle = document.createElement("h2");
+          questionTitle.textContent = question.text;
+          questionDiv.appendChild(questionTitle);
+
+          if (question.type === "multiple") {
+            const optionsDiv = document.createElement("div");
+            optionsDiv.className = "options";
+            question.options.forEach(option => {
+              const label = document.createElement("label");
+              const input = document.createElement("input");
+              input.type = "radio";
+              input.name = `question-${question.id}`;
+              input.value = option;
+              input.checked = answers[question.id] === option;
+              input.onchange = () => {
+                answers[question.id] = option;
+              };
+              label.appendChild(input);
+              label.appendChild(document.createTextNode(option));
+              optionsDiv.appendChild(label);
+            });
+            questionDiv.appendChild(optionsDiv);
+          } else {
+            const textarea = document.createElement("textarea");
+            textarea.value = answers[question.id] || "";
+            textarea.placeholder = "Type your answer here...";
+            textarea.oninput = (e) => {
+              answers[question.id] = e.target.value;
+            };
+            questionDiv.appendChild(textarea);
+          }
+          container.appendChild(questionDiv);
+        });
+
+        const submitButton = document.createElement("button");
+        submitButton.textContent = "Submit Quiz";
+        submitButton.onclick = submitQuiz;
+        container.appendChild(submitButton);
+      }
+    }
+
+    function submitQuiz() {
+      let totalScore = 0;
+      const maxTotalScore = questions.reduce((sum, q) => sum + (q.type === "long" ? q.maxScore : 1), 0);
+      const questionScores = {};
+
+      questions.forEach(question => {
+        if (question.type === "multiple") {
+          const isCorrect = answers[question.id] === question.correctAnswer;
+          questionScores[question.id] = isCorrect ? 1 : 0;
+          totalScore += isCorrect ? 1 : 0;
+        } else {
+          const score = gradeLongAnswer(answers[question.id], question.keywords, question.maxScore);
+          questionScores[question.id] = score;
+          totalScore += score;
+        }
+      });
+
+      scores = { total: totalScore, maxTotal: maxTotalScore, questionScores };
+      renderQuiz();
+    }
+
+    function resetQuiz() {
+      answers = {};
+      scores = null;
+      renderQuiz();
+    }
+
+    // Initial render
+    renderQuiz();
+  </script>
 </body>
 </html>
