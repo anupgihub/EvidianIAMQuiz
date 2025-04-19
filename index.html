@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quiz App</title>
+  <title>Evidian IAM Quiz App</title>
   <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/babel-standalone@7.22.9/babel.min.js"></script>
@@ -16,23 +16,40 @@
       {
         id: 1,
         type: "multiple",
-        text: "What is the capital of France?",
-        options: ["Paris", "London", "Berlin", "Madrid"],
-        correctAnswer: "Paris",
+        text: "What is a key feature of Evidian's Web Access Manager?",
+        options: [
+          "Clientless Single Sign-On for web applications",
+          "Physical access control for factories",
+          "Backup and replication services",
+          "Intrusive application modification"
+        ],
+        correctAnswer: "Clientless Single Sign-On for web applications",
       },
       {
         id: 2,
         type: "long",
-        text: "Explain the significance of the French Revolution.",
-        keywords: ["liberty", "equality", "fraternity", "republic", "monarchy"],
+        text: "Explain how Evidian's Identity Governance and Administration (IGA) helps organizations manage user access and ensure compliance.",
+        keywords: ["access requests", "compliance", "roles", "audit", "self-service"],
         maxScore: 10,
       },
       {
         id: 3,
         type: "multiple",
-        text: "Which planet is known as the Red Planet?",
-        options: ["Mars", "Jupiter", "Venus", "Mercury"],
-        correctAnswer: "Mars",
+        text: "Which authentication method does Evidian Orbion support to enhance security?",
+        options: [
+          "Password-only authentication",
+          "Multi-Factor Authentication (MFA) with FIDO2",
+          "OpenID Connect exclusively",
+          "Single password for all applications"
+        ],
+        correctAnswer: "Multi-Factor Authentication (MFA) with FIDO2",
+      },
+      {
+        id: 4,
+        type: "long",
+        text: "Describe the benefits of Evidian's Single Sign-On (SSO) for enterprise users and IT departments.",
+        keywords: ["one-click access", "security", "helpdesk", "productivity", "authentication"],
+        maxScore: 10,
       },
     ];
 
@@ -86,7 +103,7 @@
 
       return (
         <div className="max-w-3xl mx-auto p-6">
-          <h1 className="text-3xl font-bold mb-6 text-center">Quiz App</h1>
+          <h1 className="text-3xl font-bold mb-6 text-center">Evidian IAM Quiz App</h1>
           {scores ? (
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h2 className="text-2xl font-semibold mb-4">Results</h2>
